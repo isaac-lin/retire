@@ -9,12 +9,15 @@
   var DEFAULTS = {
     currentAge: 40, retireAge: 58, assets: 300, save: 3,
     spend: 7, pension: 2.4, loan: 2.5, loanEndAge: 68,
+    slowAge: 75, slowPct: 85, careAge: 85, carePct: 110,
     rPre: 6, rPost: 3.5, infl: 2.5, pensionAge: 65
   };
-  var KEYS = Object.keys(DEFAULTS);
+  var KEYS = Object.keys(DEFAULTS);   // 皆為數值欄位；smile 是勾選框，另外處理
+  var SMILE_ON = true;
 
   var el = {};
   KEYS.forEach(function (k) { el[k] = document.getElementById(k); });
+  el.smile = document.getElementById('smile');
 
   var $ = function (id) { return document.getElementById(id); };
   var bars = $('bars'), axis = $('axis'), strip = $('strip'), probe = $('probe');
@@ -52,10 +55,22 @@
     p.retireAge = Math.max(Math.round(p.retireAge), p.currentAge + 1);
     p.pensionAge = Math.round(p.pensionAge);
     p.loanEndAge = Math.round(p.loanEndAge);
+    p.smile = el.smile.checked;
+    p.slowAge = Math.round(p.slowAge);
+    p.careAge = Math.max(Math.round(p.careAge), p.slowAge);
     return p;
   }
 
   /* ── 模擬 ─────────────────────────────────────── */
+  // 支出微笑曲線：活躍期 100%、平淡期回落、照護期因醫療與長照回升。
+  // 關閉時三階段皆為 100%，等同固定實質支出。
+  function spendFactor(p, age) {
+    if (!p.smile) return 1;
+    if (age >= p.careAge) return p.carePct / 100;
+    if (age >= p.slowAge) return p.slowPct / 100;
+    return 1;
+  }
+
   // 每年：期初生息 → 再加投入 / 扣淨支出。金額單位皆為萬元（名目）。
   function simulate(p, retireAge, endAge) {
     retireAge = retireAge || p.retireAge;
@@ -78,7 +93,7 @@
         flow = p.save * 12;
       } else {
         var scale = Math.pow(1 + inf, age - p.currentAge);
-        var spend = p.spend * 12 * scale;
+        var spend = p.spend * 12 * scale * spendFactor(p, age);
         var inc = age >= p.pensionAge ? p.pension * 12 * scale : 0;
         if (firstSpend === null) firstSpend = spend;
         flow = -(spend + loanYear - inc);
@@ -213,6 +228,9 @@
     if (Math.round(num(el.retireAge, DEFAULTS.retireAge)) !== p.retireAge) {
       el.retireAge.value = p.retireAge;
     }
+    if (Math.round(num(el.careAge, DEFAULTS.careAge)) !== p.careAge) {
+      el.careAge.value = p.careAge;
+    }
     syncRanges(p);
 
     var sim = simulate(p);
@@ -239,6 +257,16 @@
       $('rLoanLeft').textContent = '無';
     } else {
       $('rLoanLeft').textContent = loanYears + ' 年／' + wan(p.loan * 12 * loanYears);
+    }
+
+    document.getElementById('form').classList.toggle('no-smile', !p.smile);
+    if (!p.smile) {
+      $('rPhases').textContent = wan(p.spend * 12) + '（固定）';
+    } else {
+      var note = '';
+      if (dry !== null && dry < p.careAge) note = dry < p.slowAge ? '（未及平淡期）' : '（未及照護期）';
+      $('rPhases').textContent = [1, p.slowPct / 100, p.carePct / 100]
+        .map(function (f) { return Math.round(p.spend * 12 * f); }).join(' → ') + note;
     }
 
     $('rAtRetire').textContent = wan(sim.atRetire);
@@ -301,8 +329,11 @@
       update();
     });
   });
+  el.smile.addEventListener('change', update);
+
   $('reset').addEventListener('click', function () {
     KEYS.forEach(function (k) { el[k].value = DEFAULTS[k]; });
+    el.smile.checked = SMILE_ON;
     update();
     el.currentAge.focus();
   });

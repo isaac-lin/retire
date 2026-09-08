@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/style.css?v=3">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23E7EAE0'/><rect x='4' y='18' width='4' height='9' fill='%231D5C48'/><rect x='10' y='11' width='4' height='16' fill='%231D5C48'/><rect x='16' y='6' width='4' height='21' fill='%23171C18'/><rect x='22' y='14' width='4' height='13' fill='%23171C18'/><rect x='28' y='27' width='3' height='4' fill='%23B23A2E'/></svg>">
 </head>
 <body>
@@ -98,6 +98,35 @@
         <input type="range" class="rng" aria-label="退休後月支出滑桿" data-for="spend" min="1" max="30" step="0.1" value="7">
       </div>
 
+      <div class="field field-inline field-toggle" data-field>
+        <label for="smile">支出微笑曲線<span class="hint">退休支出不是平的：活躍期最高，平淡期回落，照護期再升</span></label>
+        <div class="val"><input type="checkbox" id="smile" class="chk" checked></div>
+      </div>
+
+      <div class="field" data-field data-smile>
+        <label for="slowAge">平淡期從幾歲起<span class="hint">旅遊變少、待在家的階段</span></label>
+        <div class="val"><input type="number" id="slowAge" value="75" min="55" max="95" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+        <input type="range" class="rng" aria-label="平淡期起始年齡滑桿" data-for="slowAge" min="60" max="90" step="1" value="75">
+      </div>
+
+      <div class="field" data-field data-smile>
+        <label for="slowPct">平淡期支出比例</label>
+        <div class="val"><input type="number" id="slowPct" value="85" min="30" max="150" step="1" inputmode="numeric"><span class="unit">%</span></div>
+        <input type="range" class="rng" aria-label="平淡期支出比例滑桿" data-for="slowPct" min="50" max="120" step="1" value="85">
+      </div>
+
+      <div class="field" data-field data-smile>
+        <label for="careAge">照護期從幾歲起<span class="hint">醫療與長照開始吃錢的階段</span></label>
+        <div class="val"><input type="number" id="careAge" value="85" min="60" max="99" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+        <input type="range" class="rng" aria-label="照護期起始年齡滑桿" data-for="careAge" min="70" max="95" step="1" value="85">
+      </div>
+
+      <div class="field" data-field data-smile>
+        <label for="carePct">照護期支出比例<span class="hint">長照月費 3–8 萬，抓保守一點</span></label>
+        <div class="val"><input type="number" id="carePct" value="110" min="50" max="400" step="5" inputmode="numeric"><span class="unit">%</span></div>
+        <input type="range" class="rng" aria-label="照護期支出比例滑桿" data-for="carePct" min="80" max="300" step="5" value="110">
+      </div>
+
       <div class="field" data-field>
         <label for="loan">房貸／其他貸款月付<span class="hint">名目固定，不隨通膨調整</span></label>
         <div class="val"><input type="number" id="loan" value="2.5" min="0" max="50" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
@@ -155,6 +184,10 @@
         <div class="row">
           <dt>最早可退休<span class="hint">錢要撐到 95 歲</span></dt>
           <dd id="rEarliest">—</dd>
+        </div>
+        <div class="row">
+          <dt>三階段年支出<span class="hint">以今天的購買力，活躍／平淡／照護</span></dt>
+          <dd id="rPhases">—</dd>
         </div>
         <div class="row">
           <dt>退休後仍需繳貸<span class="hint">退休之後才會從資產扣的部分</span></dt>
@@ -218,10 +251,16 @@
 
     <h3>怎麼算的</h3>
     <p>模擬以「年」為單位，從你現在的年齡跑到 100 歲。每一年先讓期初餘額生一年的報酬，再加上當年投入（累積期）或扣掉當年淨支出（退休後）。淨支出等於支出減去年金收入。</p>
-    <p>支出和年金都會逐年隨通膨放大，所以你只要用今天的物價去填，不必自己推估三十年後的金額。「資產見底」是餘額第一次轉負的那一年。</p>
+    <p>支出和年金都會逐年隨通膨放大，所以你只要用今天的物價去填，不必自己推估三十年後的金額。支出還會再乘上微笑曲線的階段比例，詳見下一節。「資產見底」是餘額第一次轉負的那一年。</p>
 
     <h3>退休後報酬率為什麼預設比較低</h3>
     <p>多數人退休後會把部位轉保守，同時提領會讓你失去等待市場回復的餘裕。預設把累積期 6%、退休後 4% 分開填，就是為了讓這個轉折被算進去。</p>
+
+    <h3>支出微笑曲線</h3>
+    <p>把退休支出當成一個固定數字是最常見的失真。真實的退休支出是一條微笑曲線：剛退休的<strong>活躍期</strong>花最多，體力還在、想去的地方都去；七十幾歲進入<strong>平淡期</strong>，旅遊變少、待在家的時間變長，實質支出通常掉一到兩成；八十五歲後進入<strong>照護期</strong>，醫療與長照把花費拉回來，甚至更高。</p>
+    <p>這裡的比例都是<strong>相對於活躍期</strong>的實質支出，通膨另外疊加。預設 100% → 85% → 110%。照護期那格值得你認真填：台灣長照月費落在 3 到 8 萬，平均需要七到九年，若你想把這個風險算進去，把比例拉到 150% 以上並不誇張。</p>
+    <p>把開關關掉就回到固定實質支出，三階段比例都填 100% 也是同樣結果，方便你比較兩種假設的差距。</p>
+    <p>要注意的是，如果你的資產在進入某個階段之前就見底了，那個階段的比例自然不會影響結果——這時「三階段年支出」會標示未及平淡期或未及照護期。看到這個標示不是故障，是在告訴你：錢比你先走完。</p>
 
     <h3>房貸與其他貸款</h3>
     <p>貸款月付只在<strong>退休之後</strong>才從資產扣除。工作期間你是用薪水在繳，繳完剩下的才拿去投資，這已經反映在你填的「每月存入」裡了，所以累積期不會重複扣一次。</p>
@@ -257,6 +296,6 @@
   </div>
 </footer>
 
-<script src="assets/js/retire.js"></script>
+<script src="assets/js/retire.js?v=3"></script>
 </body>
 </html>

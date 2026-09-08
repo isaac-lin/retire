@@ -280,3 +280,17 @@ a{color:inherit}
 /* 貸款結清標記：比退休標記更輕，避免與見底線搶注意力 */
 .mark-loan{border-left:1px dotted var(--rule)}
 .mark-loan .mark-label{top:1.15rem;color:var(--ink-soft);opacity:.8}
+
+/* 微笑曲線開關：勾選框畫成傳票上的核取方格 */
+.field-toggle{align-items:center}
+.val input.chk{
+  appearance:none;width:1.15rem;height:1.15rem;margin:0;padding:0;
+  border:1px solid var(--ink);background:transparent;cursor:pointer;
+  display:grid;place-content:center;
+}
+.val input.chk::after{content:"";width:.62rem;height:.32rem;border:2px solid var(--surplus);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-2px);opacity:0}
+.val input.chk:checked::after{opacity:1}
+.val input.chk:checked{border-color:var(--surplus)}
+
+/* 關閉微笑曲線時，收起相依欄位 */
+.no-smile [data-smile]{display:none}
