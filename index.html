@@ -48,6 +48,7 @@
         <div class="strip-bars" id="bars"></div>
         <div class="strip-baseline" aria-hidden="true"></div>
         <div class="mark mark-retire" id="markRetire" hidden aria-hidden="true"><span class="mark-label">退休</span></div>
+        <div class="mark mark-loan" id="markLoan" hidden aria-hidden="true"><span class="mark-label">貸款結清</span></div>
         <div class="mark mark-dry" id="markDry" hidden aria-hidden="true"><span class="mark-label">見底</span></div>
       </div>
       <div class="strip-axis" id="axis" aria-hidden="true"></div>
@@ -86,15 +87,27 @@
       </div>
 
       <div class="field" data-field>
-        <label for="save">每月存入</label>
+        <label for="save">每月存入<span class="hint">繳完房貸後，實際投入投資的金額</span></label>
         <div class="val"><input type="number" id="save" value="3" min="0" max="100" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
         <input type="range" class="rng" aria-label="每月存入滑桿" data-for="save" min="0" max="30" step="0.1" value="3">
       </div>
 
       <div class="field" data-field>
-        <label for="spend">退休後每月支出<span class="hint">以今天的物價</span></label>
+        <label for="spend">退休後每月支出<span class="hint">生活費，不含房貸。以今天的物價</span></label>
         <div class="val"><input type="number" id="spend" value="7" min="0" max="100" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
         <input type="range" class="rng" aria-label="退休後月支出滑桿" data-for="spend" min="1" max="30" step="0.1" value="7">
+      </div>
+
+      <div class="field" data-field>
+        <label for="loan">房貸／其他貸款月付<span class="hint">名目固定，不隨通膨調整</span></label>
+        <div class="val"><input type="number" id="loan" value="2.5" min="0" max="50" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
+        <input type="range" class="rng" aria-label="貸款月付滑桿" data-for="loan" min="0" max="15" step="0.1" value="2.5">
+      </div>
+
+      <div class="field" data-field>
+        <label for="loanEndAge">貸款繳到<span class="hint">最後一期在你幾歲那年</span></label>
+        <div class="val"><input type="number" id="loanEndAge" value="68" min="30" max="90" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+        <input type="range" class="rng" aria-label="貸款結清年齡滑桿" data-for="loanEndAge" min="40" max="85" step="1" value="68">
       </div>
 
       <div class="field" data-field>
@@ -144,6 +157,10 @@
           <dd id="rEarliest">—</dd>
         </div>
         <div class="row">
+          <dt>退休後仍需繳貸<span class="hint">退休之後才會從資產扣的部分</span></dt>
+          <dd id="rLoanLeft">—</dd>
+        </div>
+        <div class="row">
           <dt>退休當年資產</dt>
           <dd id="rAtRetire">—</dd>
         </div>
@@ -183,6 +200,7 @@
             <th scope="col" class="num">西元</th>
             <th scope="col">階段</th>
             <th scope="col" class="num">期初</th>
+            <th scope="col" class="num">房貸</th>
             <th scope="col" class="num">投入／提領</th>
             <th scope="col" class="num">投資損益</th>
             <th scope="col" class="num">期末</th>
@@ -205,11 +223,16 @@
     <h3>退休後報酬率為什麼預設比較低</h3>
     <p>多數人退休後會把部位轉保守，同時提領會讓你失去等待市場回復的餘裕。預設把累積期 6%、退休後 4% 分開填，就是為了讓這個轉折被算進去。</p>
 
+    <h3>房貸與其他貸款</h3>
+    <p>貸款月付只在<strong>退休之後</strong>才從資產扣除。工作期間你是用薪水在繳，繳完剩下的才拿去投資，這已經反映在你填的「每月存入」裡了，所以累積期不會重複扣一次。</p>
+    <p>月付金額<strong>不隨通膨調整</strong>。固定利率房貸的月付是名目固定的，三十年後你繳的還是同一個數字，實質負擔會逐年變輕——這是通膨少數站在借款人這邊的時候。</p>
+    <p>真正危險的是貸款尾期壓過退休初期那幾年：你沒有薪水、年金可能還沒開始請領，房貸卻照繳，資產會扣得特別快。長條圖上「貸款結清」那條虛線之前如果柱子掉得很陡，就是這個原因。若你的貸款在退休前就繳完，這個欄位不會影響試算。</p>
+
     <h3>勞保年金與勞退</h3>
     <p>兩者合併填在「退休後其他月收入」。勞保年金有年金改革的變數，勞退月退則看你的個人專戶餘額，兩個數字都建議抓保守一點。若你選擇在 65 歲之前退休，中間這段沒有年金的年份，資產會扣得特別快——長條圖上會看得很清楚。</p>
 
     <h3>沒有算進去的東西</h3>
-    <p>所得稅、健保與長照支出、重大醫療、房貸、房產與其他不動產、繼承、子女教育金、以及任何一次性的大額支出。這些通常都是大數字，請自己在支出欄位加上去。</p>
+    <p>所得稅、健保與長照支出、重大醫療、房產與其他不動產的價值、繼承、子女教育金、以及任何一次性的大額支出。這些通常都是大數字，請自己在支出欄位加上去。貸款有獨立欄位，見上一節。</p>
     <p>模擬用的是固定報酬率，真實市場不是這樣走的。退休頭幾年遇到大跌，結果會比這裡算的差很多——這叫報酬順序風險，這個工具沒有處理。</p>
 
     <h3>4% 法則的位置</h3>

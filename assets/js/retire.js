@@ -8,7 +8,8 @@
 
   var DEFAULTS = {
     currentAge: 40, retireAge: 58, assets: 300, save: 3,
-    spend: 7, pension: 2.4, rPre: 6, rPost: 3.5, infl: 2.5, pensionAge: 65
+    spend: 7, pension: 2.4, loan: 2.5, loanEndAge: 68,
+    rPre: 6, rPost: 3.5, infl: 2.5, pensionAge: 65
   };
   var KEYS = Object.keys(DEFAULTS);
 
@@ -17,7 +18,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var bars = $('bars'), axis = $('axis'), strip = $('strip'), probe = $('probe');
-  var markRetire = $('markRetire'), markDry = $('markDry');
+  var markRetire = $('markRetire'), markDry = $('markDry'), markLoan = $('markLoan');
   var ledgerBody = $('ledgerBody');
 
   var lastRows = [], lastStart = 0;
@@ -50,6 +51,7 @@
     p.currentAge = Math.round(p.currentAge);
     p.retireAge = Math.max(Math.round(p.retireAge), p.currentAge + 1);
     p.pensionAge = Math.round(p.pensionAge);
+    p.loanEndAge = Math.round(p.loanEndAge);
     return p;
   }
 
@@ -68,6 +70,10 @@
       var growth = open * rate;
       var flow;
 
+      // 房貸月付為名目固定，不隨通膨調整；累積期已隱含在「每月存入」中，
+      // 只有退休後才需要從資產扣。
+      var loanYear = (retired && age <= p.loanEndAge) ? p.loan * 12 : 0;
+
       if (!retired) {
         flow = p.save * 12;
       } else {
@@ -75,7 +81,7 @@
         var spend = p.spend * 12 * scale;
         var inc = age >= p.pensionAge ? p.pension * 12 * scale : 0;
         if (firstSpend === null) firstSpend = spend;
-        flow = -(spend - inc);
+        flow = -(spend + loanYear - inc);
       }
 
       bal = open + growth + flow;
@@ -83,7 +89,7 @@
       if (dryAge === null && bal < 0) dryAge = age;
 
       rows.push({
-        age: age, open: open, growth: growth, flow: flow, close: bal,
+        age: age, open: open, growth: growth, flow: flow, loan: loanYear, close: bal,
         phase: dryAge !== null && age >= dryAge ? 'dry' : (retired ? 'draw' : 'accum'),
         retireStart: age === retireAge
       });
@@ -147,6 +153,11 @@
       markRetire.style.left = pct(p.retireAge) + '%';
     } else { markRetire.hidden = true; }
 
+    if (p.loan > 0 && p.loanEndAge > p.retireAge && p.loanEndAge <= END_AGE) {
+      markLoan.hidden = false;
+      markLoan.style.left = pct(p.loanEndAge + 1) + '%';
+    } else { markLoan.hidden = true; }
+
     if (sim.dryAge !== null) {
       markDry.hidden = false;
       markDry.style.left = pct(sim.dryAge) + '%';
@@ -181,7 +192,8 @@
       if (r.retireStart) tr.dataset.mark = 'retire';
       var cells = [
         r.age, thisYear + (r.age - base), names[r.phase],
-        wanPlain(r.open), (r.flow >= 0 ? '+' : '') + wanPlain(r.flow),
+        wanPlain(r.open), r.loan > 0 ? '−' + wanPlain(r.loan) : '—',
+        (r.flow >= 0 ? '+' : '') + wanPlain(r.flow),
         (r.growth >= 0 ? '+' : '') + wanPlain(r.growth), wanPlain(r.close)
       ];
       cells.forEach(function (v, idx) {
@@ -221,6 +233,13 @@
 
     var early = earliestRetire(p);
     $('rEarliest').textContent = early === null ? '80 歲後' : early + ' 歲';
+
+    var loanYears = Math.max(0, Math.min(p.loanEndAge, END_AGE) - p.retireAge + 1);
+    if (p.loan <= 0 || loanYears <= 0) {
+      $('rLoanLeft').textContent = '無';
+    } else {
+      $('rLoanLeft').textContent = loanYears + ' 年／' + wan(p.loan * 12 * loanYears);
+    }
 
     $('rAtRetire').textContent = wan(sim.atRetire);
     var years = Math.max(0, p.retireAge - p.currentAge);

@@ -276,3 +276,7 @@ a{color:inherit}
 /* ── foot ─────────────────────────────────────────── */
 .foot{border-top:1px solid var(--ink);padding-block:1.5rem 2.5rem}
 .foot-in{display:flex;justify-content:space-between;gap:1rem;font-size:var(--f-xs);color:var(--ink-soft)}
+
+/* 貸款結清標記：比退休標記更輕，避免與見底線搶注意力 */
+.mark-loan{border-left:1px dotted var(--rule)}
+.mark-loan .mark-label{top:1.15rem;color:var(--ink-soft);opacity:.8}
