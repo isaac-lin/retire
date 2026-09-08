@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>退休水位｜你的錢撐得到幾歲</title>
+<meta name="description" content="逐年模擬你的退休資產水位，算出資產見底的年齡與最早可退休年齡。全部在瀏覽器內計算，不上傳任何數字。">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23E7EAE0'/><rect x='4' y='18' width='4' height='9' fill='%231D5C48'/><rect x='10' y='11' width='4' height='16' fill='%231D5C48'/><rect x='16' y='6' width='4' height='21' fill='%23171C18'/><rect x='22' y='14' width='4' height='13' fill='%23171C18'/><rect x='28' y='27' width='3' height='4' fill='%23B23A2E'/></svg>">
+</head>
+<body>
+
+<a class="skip" href="#calc">跳到試算</a>
+
+<header class="masthead">
+  <div class="shell masthead-in">
+    <a class="wordmark" href="#top">退休水位</a>
+    <nav class="nav" aria-label="主要">
+      <a href="#calc">試算</a>
+      <a href="#ledger">年度明細</a>
+      <a href="#assumptions">假設</a>
+      <a href="#about">關於</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="shell">
+    <h1 class="hero-title">你的錢，<br>撐得到幾歲？</h1>
+    <p class="hero-sub">下面每一根柱子是你人生的一年，高度是那一年年底的資產。調整數字，看斷點往哪邊移動。</p>
+
+    <figure class="strip-figure">
+      <div class="strip-head">
+        <div class="verdict" id="verdict" role="status" aria-live="polite">
+          <span class="verdict-line">資產見底 <b id="verdictAge">—</b></span>
+          <span class="verdict-note" id="verdictNote">正在計算</span>
+        </div>
+        <output class="probe" id="probe" for="strip" aria-live="off"></output>
+      </div>
+
+      <div class="strip" id="strip" tabindex="0" role="img" aria-describedby="stripAlt">
+        <div class="strip-bars" id="bars"></div>
+        <div class="strip-baseline" aria-hidden="true"></div>
+        <div class="mark mark-retire" id="markRetire" hidden aria-hidden="true"><span class="mark-label">退休</span></div>
+        <div class="mark mark-dry" id="markDry" hidden aria-hidden="true"><span class="mark-label">見底</span></div>
+      </div>
+      <div class="strip-axis" id="axis" aria-hidden="true"></div>
+      <figcaption class="strip-key">
+        <span class="key"><i class="sw sw-accum"></i>累積期</span>
+        <span class="key"><i class="sw sw-draw"></i>提領期</span>
+        <span class="key"><i class="sw sw-dry"></i>赤字年</span>
+      </figcaption>
+      <p class="sr" id="stripAlt"></p>
+    </figure>
+  </div>
+</section>
+
+<section class="board" id="calc">
+  <div class="shell board-in">
+
+    <form class="inputs" id="form" novalidate>
+      <h2 class="col-head">你的數字</h2>
+
+      <div class="field" data-field>
+        <label for="currentAge">現在年齡</label>
+        <div class="val"><input type="number" id="currentAge" value="40" min="20" max="74" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+        <input type="range" class="rng" aria-label="現在年齡滑桿" data-for="currentAge" min="20" max="74" step="1" value="40">
+      </div>
+
+      <div class="field" data-field>
+        <label for="retireAge">預計退休年齡</label>
+        <div class="val"><input type="number" id="retireAge" value="58" min="40" max="80" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+        <input type="range" class="rng" aria-label="預計退休年齡滑桿" data-for="retireAge" min="40" max="80" step="1" value="58">
+      </div>
+
+      <div class="field" data-field>
+        <label for="assets">目前可投資資產</label>
+        <div class="val"><input type="number" id="assets" value="300" min="0" max="20000" step="10" inputmode="decimal"><span class="unit">萬</span></div>
+        <input type="range" class="rng" aria-label="目前資產滑桿" data-for="assets" min="0" max="5000" step="10" value="300">
+      </div>
+
+      <div class="field" data-field>
+        <label for="save">每月存入</label>
+        <div class="val"><input type="number" id="save" value="3" min="0" max="100" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
+        <input type="range" class="rng" aria-label="每月存入滑桿" data-for="save" min="0" max="30" step="0.1" value="3">
+      </div>
+
+      <div class="field" data-field>
+        <label for="spend">退休後每月支出<span class="hint">以今天的物價</span></label>
+        <div class="val"><input type="number" id="spend" value="7" min="0" max="100" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
+        <input type="range" class="rng" aria-label="退休後月支出滑桿" data-for="spend" min="1" max="30" step="0.1" value="7">
+      </div>
+
+      <div class="field" data-field>
+        <label for="pension">退休後其他月收入<span class="hint">勞保年金＋勞退月退，以今天的物價</span></label>
+        <div class="val"><input type="number" id="pension" value="2.4" min="0" max="50" step="0.1" inputmode="decimal"><span class="unit">萬</span></div>
+        <input type="range" class="rng" aria-label="其他月收入滑桿" data-for="pension" min="0" max="15" step="0.1" value="2.4">
+      </div>
+
+      <h2 class="col-head col-head-sub">市場假設</h2>
+
+      <div class="field" data-field>
+        <label for="rPre">累積期年報酬率</label>
+        <div class="val"><input type="number" id="rPre" value="6" min="-5" max="20" step="0.1" inputmode="decimal"><span class="unit">%</span></div>
+        <input type="range" class="rng" aria-label="累積期報酬率滑桿" data-for="rPre" min="0" max="12" step="0.1" value="6">
+      </div>
+
+      <div class="field" data-field>
+        <label for="rPost">退休後年報酬率</label>
+        <div class="val"><input type="number" id="rPost" value="3.5" min="-5" max="20" step="0.1" inputmode="decimal"><span class="unit">%</span></div>
+        <input type="range" class="rng" aria-label="退休後報酬率滑桿" data-for="rPost" min="0" max="12" step="0.1" value="3.5">
+      </div>
+
+      <div class="field" data-field>
+        <label for="infl">年通膨率</label>
+        <div class="val"><input type="number" id="infl" value="2.5" min="0" max="10" step="0.1" inputmode="decimal"><span class="unit">%</span></div>
+        <input type="range" class="rng" aria-label="通膨率滑桿" data-for="infl" min="0" max="6" step="0.1" value="2.5">
+      </div>
+
+      <div class="field field-inline" data-field>
+        <label for="pensionAge">年金開始請領</label>
+        <div class="val"><input type="number" id="pensionAge" value="65" min="55" max="75" step="1" inputmode="numeric"><span class="unit">歲</span></div>
+      </div>
+
+      <p class="form-foot">數字都留在你的瀏覽器裡，不會送到任何地方。<button type="button" class="linkish" id="reset">回到預設值</button></p>
+    </form>
+
+    <div class="results">
+      <h2 class="col-head">試算結果</h2>
+
+      <dl class="readout">
+        <div class="row row-lead">
+          <dt>資產見底</dt>
+          <dd id="rDry">—</dd>
+        </div>
+        <div class="row">
+          <dt>最早可退休<span class="hint">錢要撐到 95 歲</span></dt>
+          <dd id="rEarliest">—</dd>
+        </div>
+        <div class="row">
+          <dt>退休當年資產</dt>
+          <dd id="rAtRetire">—</dd>
+        </div>
+        <div class="row row-sub">
+          <dt>換算今天購買力</dt>
+          <dd id="rAtRetireReal">—</dd>
+        </div>
+        <div class="row">
+          <dt>退休首年支出<span class="hint">通膨後的實際金額</span></dt>
+          <dd id="rFirstSpend">—</dd>
+        </div>
+        <div class="row">
+          <dt>4% 法則對照<span class="hint">首年支出 ÷ 4%</span></dt>
+          <dd id="rRule4">—</dd>
+        </div>
+      </dl>
+
+      <div class="gap" id="gapBox">
+        <h3 class="gap-head" id="gapHead">缺口</h3>
+        <p class="gap-body" id="gapBody">正在計算</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="ledger">
+  <div class="shell">
+    <h2 class="sec-head">年度明細</h2>
+    <p class="sec-lede">每年先計息，再加上當年投入或扣掉當年淨支出。金額單位為萬元。</p>
+    <div class="table-wrap">
+      <table class="ledger">
+        <caption class="sr">逐年資產模擬明細</caption>
+        <thead>
+          <tr>
+            <th scope="col" class="num">年齡</th>
+            <th scope="col" class="num">西元</th>
+            <th scope="col">階段</th>
+            <th scope="col" class="num">期初</th>
+            <th scope="col" class="num">投入／提領</th>
+            <th scope="col" class="num">投資損益</th>
+            <th scope="col" class="num">期末</th>
+          </tr>
+        </thead>
+        <tbody id="ledgerBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section-prose" id="assumptions">
+  <div class="shell prose">
+    <h2 class="sec-head">假設與限制</h2>
+
+    <h3>怎麼算的</h3>
+    <p>模擬以「年」為單位，從你現在的年齡跑到 100 歲。每一年先讓期初餘額生一年的報酬，再加上當年投入（累積期）或扣掉當年淨支出（退休後）。淨支出等於支出減去年金收入。</p>
+    <p>支出和年金都會逐年隨通膨放大，所以你只要用今天的物價去填，不必自己推估三十年後的金額。「資產見底」是餘額第一次轉負的那一年。</p>
+
+    <h3>退休後報酬率為什麼預設比較低</h3>
+    <p>多數人退休後會把部位轉保守，同時提領會讓你失去等待市場回復的餘裕。預設把累積期 6%、退休後 4% 分開填，就是為了讓這個轉折被算進去。</p>
+
+    <h3>勞保年金與勞退</h3>
+    <p>兩者合併填在「退休後其他月收入」。勞保年金有年金改革的變數，勞退月退則看你的個人專戶餘額，兩個數字都建議抓保守一點。若你選擇在 65 歲之前退休，中間這段沒有年金的年份，資產會扣得特別快——長條圖上會看得很清楚。</p>
+
+    <h3>沒有算進去的東西</h3>
+    <p>所得稅、健保與長照支出、重大醫療、房貸、房產與其他不動產、繼承、子女教育金、以及任何一次性的大額支出。這些通常都是大數字，請自己在支出欄位加上去。</p>
+    <p>模擬用的是固定報酬率，真實市場不是這樣走的。退休頭幾年遇到大跌，結果會比這裡算的差很多——這叫報酬順序風險，這個工具沒有處理。</p>
+
+    <h3>4% 法則的位置</h3>
+    <p>右邊那個對照值是「退休首年支出 ÷ 4%」，也就是常見的四趴法則所需資產。它是一個快速的檢查點，不是這個工具的計算方式；逐年模擬會把你的年金、報酬率轉折和通膨都算進去，通常比單一乘數更貼近現實。</p>
+  </div>
+</section>
+
+<section class="section section-prose" id="about">
+  <div class="shell prose">
+    <h2 class="sec-head">關於</h2>
+    <p>這是一個靜態網頁。所有計算都在你的瀏覽器裡跑，沒有後端、沒有資料庫、沒有追蹤碼，你填的任何數字都不會離開這台裝置。原始碼公開，歡迎自己改一份。</p>
+    <p>這裡提供的是試算，不是投資建議，也不構成任何金融商品的推介。做重大決定前請找合格的理財或稅務專業人士談過。</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="shell foot-in">
+    <span>退休水位</span>
+    <span id="year"></span>
+  </div>
+</footer>
+
+<script src="assets/js/retire.js"></script>
+</body>
+</html>
