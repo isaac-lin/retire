@@ -7,8 +7,8 @@
   var WAN = 10000;          // 萬 → 億 的換算門檻
 
   var DEFAULTS = {
-    currentAge: 40, retireAge: 58, assets: 300, save: 3,
-    spend: 7, pension: 2.4, loan: 2.5, loanEndAge: 68,
+    currentAge: 42, retireAge: 56, assets: 1400, save: 3,
+    spend: 10, pension: 2.4, loan: 2.5, loanEndAge: 68,
     slowAge: 75, slowPct: 85, careAge: 85, carePct: 110,
     rPre: 6, rPost: 3.5, infl: 2.5, pensionAge: 65
   };
